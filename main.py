@@ -48,20 +48,18 @@ async def printEmbed(interaction: discord.Interaction):
     embed.set_footer(text="Footer text")
     embed.set_author(name=interaction.user.name, url="https://www.instagram.com/zullojeanpiero/")
     await interaction.response.send_message(embed=embed)
-
 class View(discord.ui.View):
     @discord.ui.button(label="Start", style=discord.ButtonStyle.blurple)
-    async def button_callback(self, button, interaction):
+    async def button_callback(self, interaction, button):
         number = random.randint(1,1000)
-        await button.response.send_message(":white_check_mark: Random number generated :white_check_mark:")
+        await interaction.response.send_message(":white_check_mark: Random number generated :white_check_mark:")
         def check(m):
-            return m.author == button.interaction.user and m.channel == button.interaction.channel
+            return m.author == interaction.user and m.channel == interaction.channel
         attempts = 15
         for i in range(attempts):
             try:
-                msg = await client.wait_for("message", timeout=15.0, check=check)
-                guess = int(msg)
-                await button.followup.send("a")
+                msg = await interaction.client.wait_for("message", timeout=15.0, check=check)
+                guess = int(msg.content)
                 if (number == guess):
                     await interaction.followup.send(f"YOU HAVE GUESSED THE NUMBER :fire: CONGRATSSSS! :partying_face:")
                     return
@@ -72,7 +70,7 @@ class View(discord.ui.View):
             except asyncio.TimeoutError:
                 await interaction.followup.send(":clock: You took to long to guess. Game ended.")
                 return
-            await interaction.followup.send(f"You have reached the attempts limit. The number was {number}.")
+        await interaction.followup.send(f"You have reached the attempts limit. The number was {number}.")
     @discord.ui.button(label="Info", style=discord.ButtonStyle.green)
     async def second_button_callback(self, button, interaction):
         attempts = 15
@@ -80,9 +78,9 @@ class View(discord.ui.View):
     @discord.ui.button(label="Commands", style=discord.ButtonStyle.gray)
     async def third_button_callback(self, button, interaction):
         await button.response.send_message("Here are the list of commands: \n")
-@client.tree.command(name="guessing2", description="beta", guild=GUILD_ID)
+@client.tree.command(name="guess_the_number", description="Ready to play?", guild=GUILD_ID)
 async def guessingButton(interaction: discord.Interaction):
-    await interaction.response.send_message("Before starting, if you don't know how to play you should press the 'Info' button and the 'Commands' button if you want to know some commands.\nWhenever you are ready, press the 'START' button.", view=View())
+    await interaction.response.send_message("Before starting, if you don't know how to play you should press the 'Info' button and the 'Commands' button if you want to know some commands.\nWhenever you are ready, press the 'Start' button.", view=View())
 from config import TOKEN
 client.run(TOKEN)
 

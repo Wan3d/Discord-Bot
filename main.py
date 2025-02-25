@@ -76,9 +76,19 @@ class View(discord.ui.View):
         await interaction.response.edit_message(view=self) #Edits the message to make disappear the button 
         attempts = 15
         await interaction.followup.send(f":white_circle: A random number will be generated between the range of 1 and 1000. You have {attempts} attempts to guess it.\n:warning: Think fast, because you have only 15 seconds to type each answer.")
+class viewHangman(discord.ui.View):
+    @discord.ui.button(label="Start", style=discord.ButtonStyle.primary)
+    async def first_button_callback(self, interaction, button):
+        button.disabled = True
 @client.tree.command(name="guess_the_number", description="Ready to play?", guild=GUILD_ID)
 async def guessingButton(interaction):
     await interaction.response.send_message("Before starting, if you don't know how to play you should press the 'Info' button.\nWhenever you are ready, press the 'Start' button.", view=View())
+@client.tree.command(name="hangman", description="Guess the random word", guild=GUILD_ID)
+async def hangmanButton(interaction):
+    await interaction.response.send_message("Test", view=viewHangman())
+
+# from test import randomWordToGuess
+# the idea is to get the random word that we generated after and start to work with it in this class
 from config import TOKEN
 client.run(TOKEN)
 

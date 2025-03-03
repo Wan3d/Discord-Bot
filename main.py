@@ -83,12 +83,56 @@ class viewHangman(discord.ui.View):
 @client.tree.command(name="guess_the_number", description="Ready to play?", guild=GUILD_ID)
 async def guessingButton(interaction):
     await interaction.response.send_message("Before starting, if you don't know how to play you should press the 'Info' button.\nWhenever you are ready, press the 'Start' button.", view=View())
+
+from generate_word import GeneratingRandomWord
+from hangman_stages_list import hangman_stages
+
 @client.tree.command(name="hangman", description="Guess the random word", guild=GUILD_ID)
 async def hangmanButton(interaction):
-    await interaction.response.send_message("Test", view=viewHangman())
+    wordToGuess = GeneratingRandomWord.readingFile().lower()
+    wordToGuess = "palabra"
 
-# from test import randomWordToGuess
-# the idea is to get the random word that we generated after and start to work with it in this class
+    await interaction.response.send_message("You are currently playing")
+    underScoreList = [":question:" for _ in wordToGuess]
+    i = 0
+    contCorrectAnswer = 0
+    message_word = await interaction.followup.send(f"{' '.join(underScoreList)}")
+    hangman_stages_message = await interaction.followup.send(f"```\n{hangman_stages[i]}\n```")
+
+    def check(m):
+        return m.author == interaction.user and m.channel == interaction.channel
+    
+    while i < len(hangman_stages):
+        try:
+            msg = await interaction.client.wait_for("message", timeout=15.0, check=check)
+            guess = msg.content.lower()
+            updated = False
+
+            for index, letter in enumerate(wordToGuess):
+                if guess == letter and underScoreList[index] == ":question:":
+                    underScoreList[index] = letter
+                    contCorrectAnswer += 1
+                    updated = True
+
+            if updated:
+                await message_word.edit(content=f"{' '.join(underScoreList)}")
+            else:
+                i += 1
+                await hangman_stages_message.edit(content=f"```\n{hangman_stages[i]}\n```")
+                # falta por corregir que cuando llegue a la última fase del hangman diga que ya perdió
+                # encontrar el error
+                if i == len(hangman_stages):
+                    await interaction.followup.send(f":x: You lost! The word was {wordToGuess}")
+                    return
+
+            if contCorrectAnswer == len(wordToGuess):
+                await interaction.followup.send(f":tada: You won! The word was {wordToGuess}")
+                return
+
+        except Exception as e:
+            await interaction.followup.send(":x: You took to long to guess. Game ended.")
+            return
+        
 from config import TOKEN
 client.run(TOKEN)
 

@@ -1,4 +1,4 @@
-rojo  
+rojo 
 verde  
 Azul  
 claro  
